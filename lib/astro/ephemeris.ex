@@ -51,7 +51,7 @@ defmodule Astro.Ephemeris do
   spkgeo/4 involves slightly less overhead than does spkez/5 and thus may be marginally faster than
   calling spkez/5
   """
-  @spec spkez(
+  @spec spkgeo(
           et :: float(),
           target :: integer(),
           observer :: integer(),
