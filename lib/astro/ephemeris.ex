@@ -1,4 +1,7 @@
 defmodule Astro.Ephemeris do
+  @moduledoc """
+  Calculation state of objects
+  """
   use Astro.NIF, "ephemeris"
 
   require Logger

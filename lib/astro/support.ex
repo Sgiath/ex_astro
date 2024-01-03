@@ -1,4 +1,7 @@
 defmodule Astro.Support do
+  @moduledoc """
+  Support functions
+  """
   use Astro.NIF, "support"
 
   def named_objects do
