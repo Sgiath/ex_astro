@@ -135,6 +135,14 @@ defmodule Astro.Ephemeris do
   This routine is identical in function to the routine `spkez` except that it allows you to refer to
   ephemeris objects by name (via a character string).
 
+  ## Example
+
+  Get geometric position of Earth relative to Solar System Barycenter in J2000 reference plane at
+  2000-01-01 00:00:00.0
+
+      iex> Astro.Ephemeris.spkezr("EARTH", 0.0, "J2000", "NONE", "SSB")
+      {:ok, [x, y, z, dx, dy, dz], lt}
+
   More info at
   https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkezr_c
   """
@@ -192,16 +200,17 @@ defmodule Astro.Ephemeris do
 
   ## Input
 
-  state - is the state (position and velocity) of the body at some epoch. Components are x, y, z,
-          dx/dt, dy/dt, dz/dt. `state` must be expressed relative to an inertial reference frame.
-          Units are km and km/sec.
-  et - is the epoch of the input state, in ephemeris seconds past J2000.
-  mu - is the gravitational parameter (GM, km^3 / sec^2 ) of the primary body.
+  - `state` - is the state (position and velocity) of the body at some epoch. Components are x, y,
+    z, dx/dt, dy/dt, dz/dt. `state` must be expressed relative to an inertial reference frame. Units
+    are km and km/sec.
+
+  - `et` - is the epoch of the input state, in ephemeris seconds past J2000.
+  - `mu` - is the gravitational parameter (GM, km^3 / sec^2 ) of the primary body.
 
   ## Output
 
-  elts - are equivalent conic elements describing the orbit of the body around its primary. The
-         elements are, in order:
+  - `elts` - are equivalent conic elements describing the orbit of the body around its primary. The
+    elements are, in order:
 
       rp      Perifocal distance.
       ecc     Eccentricity.
@@ -212,9 +221,9 @@ defmodule Astro.Ephemeris do
       t0      Epoch.
       mu      Gravitational parameter.
 
-  The epoch of the elements is the epoch of the input state. Units are km, rad, rad/sec. The same
-  elements are used to describe all three types (elliptic, hyperbolic, and parabolic) of conic
-  orbit.
+    The epoch of the elements is the epoch of the input state. Units are km, rad, rad/sec. The same
+    elements are used to describe all three types (elliptic, hyperbolic, and parabolic) of conic
+    orbit.
 
   More info at
   https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/oscelt_c
@@ -231,33 +240,33 @@ defmodule Astro.Ephemeris do
 
   ## Input
 
-  `elts` - are conic osculating elements describing the orbit of a body around a primary. The elements
-           are, in order:
+  - `elts` - are conic osculating elements describing the orbit of a body around a primary.
+    The elements are, in order:
 
-        RP      Perifocal distance.
-        ECC     Eccentricity.
-        INC     Inclination.
-        LNODE   Longitude of the ascending node.
-        ARGP    Argument of periapse.
-        M0      Mean anomaly at epoch.
-        T0      Epoch.
-        MU      Gravitational parameter.
+      RP      Perifocal distance.
+      ECC     Eccentricity.
+      INC     Inclination.
+      LNODE   Longitude of the ascending node.
+      ARGP    Argument of periapse.
+      M0      Mean anomaly at epoch.
+      T0      Epoch.
+      MU      Gravitational parameter.
 
-        Units are km, rad, rad/sec, km**3/sec**2.
+    Units are km, rad, rad/sec, km**3/sec**2.
 
-        The epoch T0 is given in ephemeris seconds past J2000. T0 is the instant at which the state
-        of the body is specified by the elements.
+    The epoch T0 is given in ephemeris seconds past J2000. T0 is the instant at which the state
+    of the body is specified by the elements.
 
-        The same elements are used to describe all three types (elliptic, hyperbolic, and parabolic)
-        of conic orbit.
+    The same elements are used to describe all three types (elliptic, hyperbolic, and parabolic)
+    of conic orbit.
 
-  `et` - is the time at which the state of the orbiting body is to be determined, in ephemeris seconds
-       J2000.
+  - `et` - is the time at which the state of the orbiting body is to be determined, in ephemeris seconds
+    J2000.
 
   ## Output
 
-  `state` - is the state (position and velocity) of the body at time `et`. Components are x, y, z,
-            dx/dt, dy/dt, dz/dt.
+  - `state` - is the state (position and velocity) of the body at time `et`. Components are x, y, z,
+    dx/dt, dy/dt, dz/dt.
 
   More info at
   https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/conics_c

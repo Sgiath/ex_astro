@@ -1,10 +1,5 @@
 import Config
 
-unless config_env() == :test do
-  config :nx, :default_backend, EXLA.Backend
-  config :exla, client: :rocm
-end
-
 config :ex_astro,
   spice_kernels: [
     # asteroids
