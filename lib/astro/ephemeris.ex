@@ -1,6 +1,61 @@
 defmodule Astro.Ephemeris do
   @moduledoc """
   Calculation state of objects
+
+  ## Aberration corrections
+
+  Aberration correction argument in functions in this module may be any of the following:
+
+  - `"NONE"` - Apply no correction. Return the geometric state of the target body relative to
+    the observer.
+
+  The following values of `abcorr` apply to the "reception" case in which photons depart from
+  the target's location at the light-time corrected epoch et-lt and *arrive* at the observer's
+  location at `et`:
+
+  - `"LT"` - Correct for one-way light time (also called "planetary aberration") using a
+    Newtonian formulation. This correction yields the state of the target at the moment it
+    emitted photons arriving at the observer at `et`. The light time correction uses an
+    iterative solution of the light time equation (see Particulars for details). The solution
+    invoked by the "LT" option uses one iteration.
+
+  - `"LT+S"` - Correct for one-way light time and stellar aberration using a Newtonian
+    formulation. This option modifies the state obtained with the "LT" option to account for
+    the observer's velocity relative to the solar system barycenter. The result is the
+    apparent state of the target---the position and velocity of the target as seen by
+    the observer.
+
+  - `"CN"` - Converged Newtonian light time correction. In solving the light time equation,
+    the "CN" correction iterates until the solution converges (three iterations on all
+    supported platforms). Whether the "CN+S" solution is substantially more accurate than
+    the "LT" solution depends on the geometry of the participating objects and on
+    the accuracy of the input data. In all cases this routine will execute more slowly when
+    a converged solution is computed. See the Particulars section below for a discussion of
+    precision of light time corrections.
+
+  - `"CN+S"` - Converged Newtonian light time correction and stellar aberration correction.
+
+  The following values of `abcorr` apply to the "transmission" case in which photons *depart*
+  from the observer's location at `et` and arrive at the target's location at the light-time
+  corrected epoch et+lt:
+
+  - `"XLT"` - "Transmission" case: correct for one-way light time using a Newtonian
+    formulation. This correction yields the state of the target at the moment it receives
+    photons emitted from the observer's location at `et`.
+
+  - `"XLT+S"` - "Transmission" case: correct for one-way light time and stellar aberration
+    using a Newtonian formulation  This option modifies the state obtained with the "XLT"
+    option to account for the observer's velocity relative to the solar system barycenter.
+    The position component of the computed target state indicates the direction that photons
+    emitted from the observer's location must be "aimed" to hit the target.
+
+  - `"XCN"` - "Transmission" case: converged Newtonian light time correction.
+
+  - `"XCN+S"` - "Transmission" case: converged Newtonian light time correction and stellar
+    aberration correction.
+
+  Neither special nor general relativistic effects are accounted for in the aberration
+  corrections applied by this routine.
   """
   use Astro.NIF, "ephemeris"
 
@@ -36,64 +91,8 @@ defmodule Astro.Ephemeris do
       state vector `starg` for details.
 
     - `abcorr` - indicates the aberration corrections to be applied to the state of the target body
-      to account for one-way light time and stellar aberration. See the discussion in the
-      Particulars section for recommendations on how to choose aberration corrections.
-
-      `abcorr` may be any of the following:
-
-        - `"NONE"` - Apply no correction. Return the geometric state of the target body relative to
-          the observer.
-
-      The following values of `abcorr` apply to the "reception" case in which photons depart from
-      the target's location at the light-time corrected epoch et-lt and *arrive* at the observer's
-      location at `et`:
-
-        - `"LT"` - Correct for one-way light time (also called "planetary aberration") using a
-          Newtonian formulation. This correction yields the state of the target at the moment it
-          emitted photons arriving at the observer at `et`. The light time correction uses an
-          iterative solution of the light time equation (see Particulars for details). The solution
-          invoked by the "LT" option uses one iteration.
-
-        - `"LT+S"` - Correct for one-way light time and stellar aberration using a Newtonian
-          formulation. This option modifies the state obtained with the "LT" option to account for
-          the observer's velocity relative to the solar system barycenter. The result is the
-          apparent state of the target---the position and velocity of the target as seen by
-          the observer.
-
-        - `"CN"` - Converged Newtonian light time correction. In solving the light time equation,
-          the "CN" correction iterates until the solution converges (three iterations on all
-          supported platforms). Whether the "CN+S" solution is substantially more accurate than
-          the "LT" solution depends on the geometry of the participating objects and on
-          the accuracy of the input data. In all cases this routine will execute more slowly when
-          a converged solution is computed. See the Particulars section below for a discussion of
-          precision of light time corrections.
-
-        - `"CN+S"` - Converged Newtonian light time correction and stellar aberration correction.
-
-
-      The following values of `abcorr` apply to the "transmission" case in which photons *depart*
-      from the observer's location at `et` and arrive at the target's location at the light-time
-      corrected epoch et+lt:
-
-        - `"XLT"` - "Transmission" case: correct for one-way light time using a Newtonian
-          formulation. This correction yields the state of the target at the moment it receives
-          photons emitted from the observer's location at `et`.
-
-        - `"XLT+S"` - "Transmission" case: correct for one-way light time and stellar aberration
-          using a Newtonian formulation  This option modifies the state obtained with the "XLT"
-          option to account for the observer's velocity relative to the solar system barycenter.
-          The position component of the computed target state indicates the direction that photons
-          emitted from the observer's location must be "aimed" to hit the target.
-
-        - `"XCN"` - "Transmission" case: converged Newtonian light time correction.
-
-        - `"XCN+S"` - "Transmission" case: converged Newtonian light time correction and stellar
-          aberration correction.
-
-      Neither special nor general relativistic effects are accounted for in the aberration
-      corrections applied by this routine.
-
-      Case and blanks are not significant in the string `abcorr`.
+      to account for one-way light time and stellar aberration. See Aberration corrections section
+      in module documentation.
 
     - `obs` - is the name of an observing body. Optionally, you may supply the ID code of the object
       as an integer string. For example, both "EARTH" and "399" are legitimate strings to supply to
@@ -137,10 +136,13 @@ defmodule Astro.Ephemeris do
 
   ## Example
 
-  Get geometric position of Earth relative to Solar System Barycenter in J2000 reference plane at
-  2000-01-01 00:00:00.0
+  Get geometric state of Earth relative to Solar System Barycenter in J2000 reference plane at
+  thr current date
 
-      iex> Astro.Ephemeris.spkezr("EARTH", 0.0, "J2000", "NONE", "SSB")
+      iex> now = DateTime.utc_now()
+      iex> jd = Astro.Time.to_julian_date(now)
+      iex> et = Astro.Time.day2sec(jd)
+      iex> Astro.Ephemeris.spkezr("EARTH", et, "J2000", "NONE", "SSB")
       {:ok, [x, y, z, dx, dy, dz], lt}
 
   More info at
@@ -153,7 +155,7 @@ defmodule Astro.Ephemeris do
           abcorr :: String.t(),
           observer :: String.t()
         ) :: {:ok, state :: [float()], lt :: float()} | {:error, String.t()}
-  def spkezr(_target, _et, _ref_plane, _ab_corr, _observer),
+  def spkezr(target, et, ref_plane, ab_corr, observer) when is_binary(target) and is_float(et) and is_binary(ref_plane) and is_binary(ab_corr) and is_binary(observer),
     do: :erlang.nif_error({:error, :not_loaded})
 
   @doc """
@@ -162,6 +164,17 @@ defmodule Astro.Ephemeris do
 
   Return the state (position and velocity) of a target body relative to an observing body,
   optionally corrected for light time (planetary aberration) and stellar aberration.
+
+  ## Example
+
+  Get geometric state of Earth relative to Solar System Barycenter in J2000 reference plane at
+  thr current date
+
+      iex> now = DateTime.utc_now()
+      iex> jd = Astro.Time.to_julian_date(now)
+      iex> et = Astro.Time.day2sec(jd)
+      iex> Astro.Ephemeris.spkez(399, et, "J2000", "NONE", 0)
+      {:ok, [x, y, z, dx, dy, dz], lt}
 
   More info at
   https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkez_c
@@ -179,6 +192,17 @@ defmodule Astro.Ephemeris do
   @doc """
   Compute the geometric state (position and velocity) of a target body relative to an observing
   body.
+
+  ## Example
+
+  Get geometric state of Earth relative to Solar System Barycenter in J2000 reference plane at
+  thr current date
+
+      iex> now = DateTime.utc_now()
+      iex> jd = Astro.Time.to_julian_date(now)
+      iex> et = Astro.Time.day2sec(jd)
+      iex> Astro.Ephemeris.spkgeo(399, et, "J2000", 0)
+      {:ok, [x, y, z, dx, dy, dz], lt}
 
   More info at
   https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkgeo_c
@@ -212,14 +236,14 @@ defmodule Astro.Ephemeris do
   - `elts` - are equivalent conic elements describing the orbit of the body around its primary. The
     elements are, in order:
 
-      rp      Perifocal distance.
-      ecc     Eccentricity.
-      inc     Inclination.
-      lnode   Longitude of the ascending node.
-      argp    Argument of periapsis.
-      m0      Mean anomaly at epoch.
-      t0      Epoch.
-      mu      Gravitational parameter.
+        rp      Perifocal distance.
+        ecc     Eccentricity.
+        inc     Inclination.
+        lnode   Longitude of the ascending node.
+        argp    Argument of periapsis.
+        m0      Mean anomaly at epoch.
+        t0      Epoch.
+        mu      Gravitational parameter.
 
     The epoch of the elements is the epoch of the input state. Units are km, rad, rad/sec. The same
     elements are used to describe all three types (elliptic, hyperbolic, and parabolic) of conic
@@ -243,18 +267,18 @@ defmodule Astro.Ephemeris do
   - `elts` - are conic osculating elements describing the orbit of a body around a primary.
     The elements are, in order:
 
-      RP      Perifocal distance.
-      ECC     Eccentricity.
-      INC     Inclination.
-      LNODE   Longitude of the ascending node.
-      ARGP    Argument of periapse.
-      M0      Mean anomaly at epoch.
-      T0      Epoch.
-      MU      Gravitational parameter.
+        RP      Perifocal distance.
+        ECC     Eccentricity.
+        INC     Inclination.
+        LNODE   Longitude of the ascending node.
+        ARGP    Argument of periapse.
+        M0      Mean anomaly at epoch.
+        T0      Epoch.
+        MU      Gravitational parameter.
 
-    Units are km, rad, rad/sec, km**3/sec**2.
+    Units are km, rad, rad/sec, km^3/sec^2.
 
-    The epoch T0 is given in ephemeris seconds past J2000. T0 is the instant at which the state
+    The epoch `T0` is given in ephemeris seconds past J2000. `T0` is the instant at which the state
     of the body is specified by the elements.
 
     The same elements are used to describe all three types (elliptic, hyperbolic, and parabolic)

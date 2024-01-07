@@ -218,8 +218,11 @@ jd2dt(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 static ERL_NIF_TERM
 str2et(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
-  double et;
-  char *timstr = load_string(env, argv[0]);
+  SpiceDouble et;
+  SpiceChar *timstr;
+
+  if (!load_string(env, argv[0], &timstr))
+    return enif_make_badarg(env);
 
   // convert to TDB (ET)
   str2et_c(timstr, &et);
@@ -235,7 +238,10 @@ static ERL_NIF_TERM
 utc2et(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
   double et;
-  char *utcstr = load_string(env, argv[0]);
+  char *utcstr;
+
+  if (!load_string(env, argv[0], &utcstr))
+    return enif_make_badarg(env);
 
   // convert to TDB (ET)
   utc2et_c(utcstr, &et);
@@ -251,11 +257,12 @@ static ERL_NIF_TERM
 unitim(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
   SpiceDouble epoch;
-  if (!enif_get_double(env, argv[0], &epoch))
-    return enif_make_badarg(env);
+  SpiceChar *insys, *outsys;
 
-  SpiceChar *insys = load_string(env, argv[1]);
-  SpiceChar *outsys = load_string(env, argv[2]);
+  if (!enif_get_double(env, argv[0], &epoch) ||
+      !load_string(env, argv[1], &insys) ||
+      !load_string(env, argv[2], &outsys))
+    return enif_make_badarg(env);
 
   SpiceDouble result = unitim_c(epoch, insys, outsys);
 

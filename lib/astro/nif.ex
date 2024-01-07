@@ -13,7 +13,7 @@ defmodule Astro.NIF do
         {kernels, missing_files} = Enum.split_with(@kernels, &File.exists?/1)
 
         Enum.each(missing_files, fn path ->
-          Logger.warning("Kernel #{path} configured but file doesn't exists. Skipping")
+          Logger.warning("Kernel '#{path}' configured but file doesn't exists. Skipping")
         end)
 
         :ex_astro

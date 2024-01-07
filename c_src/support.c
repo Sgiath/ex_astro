@@ -27,7 +27,10 @@ bodc2n(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 static ERL_NIF_TERM
 bodn2c(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
-  char *name = load_string(env, argv[0]);
+  SpiceChar *name;
+
+  if (!load_string(env, argv[0], &name))
+    return enif_make_badarg(env);
 
   SpiceInt code;
   SpiceBoolean found;
@@ -49,8 +52,11 @@ bodn2c(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 static ERL_NIF_TERM
 spkobj(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
-  char *file = load_string(env, argv[0]);
+  SpiceChar *file;
   SPICEINT_CELL(ids, 1000);
+
+  if (!load_string(env, argv[0], &file))
+    return enif_make_badarg(env);
 
   spkobj_c(file, &ids);
 
@@ -73,16 +79,16 @@ static ERL_NIF_TERM
 bodvcd(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
   SpiceInt code;
+  SpiceChar *item;
 
-  if (!enif_get_int(env, argv[0], &code))
+  if (!enif_get_int(env, argv[0], &code) ||
+      !load_string(env, argv[1], &item))
     return enif_make_badarg(env);
 
-  char *item = load_string(env, argv[1]);
-
   SpiceInt dim;
-  SpiceDouble values[6];
+  SpiceDouble values[16];
 
-  bodvcd_c(code, item, 6, &dim, values);
+  bodvcd_c(code, item, 16, &dim, values);
 
   // check for any errors
   if (failed_c())
@@ -91,11 +97,32 @@ bodvcd(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
   return ok_result(env, make_list(env, values, dim));
 }
 
+static ERL_NIF_TERM
+bodvrd(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
+{
+  SpiceChar *name, *item;
+
+  if (!load_string(env, argv[0], &name) ||
+      !load_string(env, argv[1], &item))
+    return enif_make_badarg(env);
+
+  SpiceInt dim;
+  SpiceDouble values[16];
+
+  bodvrd_c(name, item, 16, &dim, values);
+
+  // check for any errors
+  if (failed_c())
+    return handle_error(env);
+
+  return ok_result(env, make_list(env, values, dim));
+}
 static ErlNifFunc nif_funcs[] = {
     {"bodc2n", 1, bodc2n},
     {"bodn2c", 1, bodn2c},
     {"spkobj", 1, spkobj},
     {"bodvcd", 2, bodvcd},
+    {"bodvrd", 2, bodvrd},
 };
 
 ERL_NIF_INIT(Elixir.Astro.Support, nif_funcs, &load, NULL, &upgrade, &unload)

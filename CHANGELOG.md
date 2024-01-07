@@ -1,6 +1,12 @@
 # Changelog
 
-## v0.1.1 (2024-01-07)
+## v0.2.1 (2024-01-07)
+
+- fix loading strings
+- new functions
+  - `bodvrd`
+
+## v0.2.0 (2024-01-07)
 
 - standardize all functions outputs to be same as in SPICE
 - return :ok/:error tuples

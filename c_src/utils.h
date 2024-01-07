@@ -1,40 +1,42 @@
+#include <stdbool.h>
 #include <string.h>
 #include <erl_nif.h>
 #include <erfa.h>
 #include "SpiceUsr.h"
 
-static char *
-load_string(ErlNifEnv *env, ERL_NIF_TERM arg)
+static bool
+load_string(ErlNifEnv *env, ERL_NIF_TERM arg, char **result)
 {
-  ErlNifBinary bin; // Binary structure to hold the string
+  ErlNifBinary bin;
 
-  // Get the binary argument from the Erlang term
-  enif_inspect_binary(env, arg, &bin);
+  if (!enif_inspect_binary(env, arg, &bin))
+    return false;
 
-  // Allocate memory for the string (+1 for null terminator)
-  char *str = enif_alloc(bin.size + 1);
+  *result = malloc(sizeof(char) * (bin.size + 1));
+  memcpy(*result, bin.data, bin.size);
+  (*result)[bin.size] = '\0';
 
-  // Copy the binary data to the allocated memory and add null terminator
-  memcpy(str, bin.data, bin.size);
-  str[bin.size] = '\0';
-
-  return str;
+  return true;
 }
 
-static double *
-load_list(ErlNifEnv *env, ERL_NIF_TERM arg, size_t len)
+static bool
+load_list(ErlNifEnv *env, ERL_NIF_TERM arg, size_t l, double *result)
 {
-  double result[len];
+  size_t len;
+  if (!enif_get_list_length(env, arg, &len) || len != l)
+    return false;
+
+  result = enif_alloc(len * sizeof(double));
   ERL_NIF_TERM head, tail = arg;
 
   for (int i = 0; i < len; i++)
   {
     if (!enif_get_list_cell(env, tail, &head, &tail) ||
         enif_get_double(env, head, &result[i]))
-      return enif_make_badarg(env);
+      return false;
   }
 
-  return result;
+  return true;
 }
 
 static ERL_NIF_TERM
@@ -74,17 +76,20 @@ make_binary(ErlNifEnv *env, char *data)
 static int
 load(ErlNifEnv *env, void **priv, ERL_NIF_TERM load_info)
 {
-  ERL_NIF_TERM head;
-
   errdev_c("SET", 0, "NULL");
   errprt_c("SET", 0, "ALL");
   erract_c("SET", 0, "RETURN");
 
+  SpiceChar *path;
+  ERL_NIF_TERM head;
+
   while (enif_get_list_cell(env, load_info, &head, &load_info))
   {
-    char *path = load_string(env, head);
+    if (!load_string(env, head, &path))
+      return 1;
+
     furnsh_c(path);
-    enif_free(path);
+    free(path);
   }
 
   return 0;
@@ -93,7 +98,7 @@ load(ErlNifEnv *env, void **priv, ERL_NIF_TERM load_info)
 static int
 upgrade(ErlNifEnv *env, void **priv, void **old_priv, ERL_NIF_TERM load_info)
 {
-  return 0;
+  return 1;
 }
 
 static void
