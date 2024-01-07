@@ -21,6 +21,35 @@ load_string(ErlNifEnv *env, ERL_NIF_TERM arg)
   return str;
 }
 
+static double *
+load_list(ErlNifEnv *env, ERL_NIF_TERM arg, size_t len)
+{
+  double result[len];
+  ERL_NIF_TERM head, tail = arg;
+
+  for (int i = 0; i < len; i++)
+  {
+    if (!enif_get_list_cell(env, tail, &head, &tail) ||
+        enif_get_double(env, head, &result[i]))
+      return enif_make_badarg(env);
+  }
+
+  return result;
+}
+
+static ERL_NIF_TERM
+make_list(ErlNifEnv *env, double *list, size_t len)
+{
+  ERL_NIF_TERM result[len];
+
+  for (int i = 0; i < len; i++)
+  {
+    result[i] = enif_make_double(env, list[i]);
+  }
+
+  return enif_make_list_from_array(env, result, len);
+}
+
 static ERL_NIF_TERM
 make_binary(ErlNifEnv *env, char *data)
 {
@@ -97,4 +126,10 @@ static ERL_NIF_TERM
 ok_result(ErlNifEnv *env, ERL_NIF_TERM r)
 {
   return enif_make_tuple2(env, enif_make_atom(env, "ok"), r);
+}
+
+static ERL_NIF_TERM
+ok_result2(ErlNifEnv *env, ERL_NIF_TERM r1, ERL_NIF_TERM r2)
+{
+  return enif_make_tuple3(env, enif_make_atom(env, "ok"), r1, r2);
 }

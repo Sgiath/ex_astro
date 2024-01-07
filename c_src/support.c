@@ -21,8 +21,7 @@ bodc2n(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
   if (!found)
     return error_result(env, "body not found");
 
-  // return OK tuple
-  return make_binary(env, name);
+  return ok_result(env, make_binary(env, name));
 }
 
 static ERL_NIF_TERM
@@ -44,7 +43,7 @@ bodn2c(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
     return error_result(env, "body not found");
 
   // return OK tuple
-  return enif_make_int(env, code);
+  return ok_result(env, enif_make_int(env, code));
 }
 
 static ERL_NIF_TERM
@@ -67,13 +66,36 @@ spkobj(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
     erl_ids[i] = enif_make_int(env, SPICE_CELL_ELEM_I(&ids, i));
   }
 
-  return enif_make_list_from_array(env, erl_ids, length);
+  return ok_result(env, enif_make_list_from_array(env, erl_ids, length));
+}
+
+static ERL_NIF_TERM
+bodvcd(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
+{
+  SpiceInt code;
+
+  if (!enif_get_int(env, argv[0], &code))
+    return enif_make_badarg(env);
+
+  char *item = load_string(env, argv[1]);
+
+  SpiceInt dim;
+  SpiceDouble values[6];
+
+  bodvcd_c(code, item, 6, &dim, values);
+
+  // check for any errors
+  if (failed_c())
+    return handle_error(env);
+
+  return ok_result(env, make_list(env, values, dim));
 }
 
 static ErlNifFunc nif_funcs[] = {
     {"bodc2n", 1, bodc2n},
     {"bodn2c", 1, bodn2c},
     {"spkobj", 1, spkobj},
+    {"bodvcd", 2, bodvcd},
 };
 
 ERL_NIF_INIT(Elixir.Astro.Support, nif_funcs, &load, NULL, &upgrade, &unload)

@@ -7,6 +7,7 @@ defmodule Mix.Tasks.Astro.Kernels do
   If you want to download more kernels manually look here:
   https://naif.jpl.nasa.gov/pub/naif/generic_kernels/
   """
+  @requirements ["app.start"]
 
   use Mix.Task
 
@@ -77,9 +78,8 @@ defmodule Mix.Tasks.Astro.Kernels do
 
   @kernels @spk_kernels ++ @lsk_kernels ++ @pck_kernels
 
+  @impl Mix.Task
   def run(_args) do
-    Application.ensure_all_started(:ex_astro)
-
     File.mkdir_p("priv/kernels/spk/asteroids/")
     File.mkdir_p("priv/kernels/spk/comets/")
     File.mkdir_p("priv/kernels/spk/lagrange_point/")

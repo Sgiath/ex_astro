@@ -15,11 +15,6 @@ defmodule Astro.Time do
 
   require Logger
 
-  def tcb_now do
-    DateTime.utc_now()
-    |> to_tcb()
-  end
-
   def to_datetime(julian_date) when is_float(julian_date) do
     {y, m, d, h, mn, s, us} = jd2dt(julian_date)
 
@@ -39,7 +34,7 @@ defmodule Astro.Time do
     }
   end
 
-  def to_jd(%DateTime{} = dt) do
+  def to_julian_date(%DateTime{} = dt) do
     sec =
       case dt.microsecond do
         {_value, 0} -> dt.second * 1.0
@@ -47,36 +42,6 @@ defmodule Astro.Time do
       end
 
     dtf2d(dt.year, dt.month, dt.day, dt.hour, dt.minute, sec)
-  end
-
-  def to_tai(%DateTime{} = dt) do
-    dt
-    |> to_jd()
-    |> utc2tai()
-  end
-
-  def to_tt(%DateTime{} = dt) do
-    dt
-    |> to_tai()
-    |> tai2tt()
-  end
-
-  def to_tcg(%DateTime{} = dt) do
-    dt
-    |> to_tt()
-    |> tt2tcg()
-  end
-
-  def to_tdb(%DateTime{} = dt) do
-    dt
-    |> to_tt()
-    |> tt2tdb()
-  end
-
-  def to_tcb(%DateTime{} = dt) do
-    dt
-    |> to_tdb()
-    |> tdb2tcb()
   end
 
   # NIF API
