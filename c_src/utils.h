@@ -22,7 +22,7 @@ load_string(ErlNifEnv *env, ERL_NIF_TERM arg, char **result)
 static bool
 load_list(ErlNifEnv *env, ERL_NIF_TERM arg, size_t l, double *result)
 {
-  size_t len;
+  unsigned int len;
   if (!enif_get_list_length(env, arg, &len) || len != l)
     return false;
 
@@ -32,7 +32,7 @@ load_list(ErlNifEnv *env, ERL_NIF_TERM arg, size_t l, double *result)
   for (int i = 0; i < len; i++)
   {
     if (!enif_get_list_cell(env, tail, &head, &tail) ||
-        enif_get_double(env, head, &result[i]))
+        !enif_get_double(env, head, &result[i]))
       return false;
   }
 
@@ -73,42 +73,8 @@ make_binary(ErlNifEnv *env, char *data)
   }
 }
 
-static int
-load(ErlNifEnv *env, void **priv, ERL_NIF_TERM load_info)
-{
-  errdev_c("SET", 0, "NULL");
-  errprt_c("SET", 0, "ALL");
-  erract_c("SET", 0, "RETURN");
-
-  SpiceChar *path;
-  ERL_NIF_TERM head;
-
-  while (enif_get_list_cell(env, load_info, &head, &load_info))
-  {
-    if (!load_string(env, head, &path))
-      return 1;
-
-    furnsh_c(path);
-    free(path);
-  }
-
-  return 0;
-}
-
-static int
-upgrade(ErlNifEnv *env, void **priv, void **old_priv, ERL_NIF_TERM load_info)
-{
-  return 1;
-}
-
-static void
-unload(ErlNifEnv *env, void *priv)
-{
-  return;
-}
-
 static ERL_NIF_TERM
-error_result(ErlNifEnv *env, const char *error_msg)
+error_result(ErlNifEnv *env, char *error_msg)
 {
   return enif_make_tuple2(env, enif_make_atom(env, "error"), make_binary(env, error_msg));
 }
@@ -137,4 +103,38 @@ static ERL_NIF_TERM
 ok_result2(ErlNifEnv *env, ERL_NIF_TERM r1, ERL_NIF_TERM r2)
 {
   return enif_make_tuple3(env, enif_make_atom(env, "ok"), r1, r2);
+}
+
+static int
+load(ErlNifEnv *env, void **priv, ERL_NIF_TERM load_info)
+{
+  errdev_c("SET", 0, "NULL");
+  errprt_c("SET", 0, "ALL");
+  erract_c("SET", 0, "RETURN");
+
+  SpiceChar *path;
+  ERL_NIF_TERM head, tail = load_info;
+
+  while (enif_get_list_cell(env, tail, &head, &tail))
+  {
+    if (!load_string(env, head, &path))
+      return 1;
+
+    furnsh_c(path);
+    free(path);
+  }
+
+  return 0;
+}
+
+static int
+upgrade(ErlNifEnv *env, void **priv, void **old_priv, ERL_NIF_TERM load_info)
+{
+  return 1;
+}
+
+static void
+unload(ErlNifEnv *env, void *priv)
+{
+  return;
 }

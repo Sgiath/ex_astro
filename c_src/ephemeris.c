@@ -88,7 +88,7 @@ spkgeo(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 static ERL_NIF_TERM
 oscelt(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
-  SpiceDouble *state;
+  SpiceDouble *state=NULL;
   SpiceDouble et;
   SpiceDouble mu;
   SpiceDouble elts[8];
@@ -111,7 +111,9 @@ oscelt(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 static ERL_NIF_TERM
 conics(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
-  SpiceDouble *elts, et, state[6];
+  SpiceDouble *elts=NULL;
+  SpiceDouble et;
+  SpiceDouble state[6];
 
   if (!load_list(env, argv[0], 8, elts) ||
       !enif_get_double(env, argv[1], &et))

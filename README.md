@@ -15,7 +15,7 @@ It is a bit more complicated then normal lib so pay attention:
   def deps do
     [
       ...
-      {:ex_astro, "~> 0.1"},
+      {:ex_astro, "~> 0.2"},
       ...
     ]
   end

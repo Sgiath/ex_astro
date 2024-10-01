@@ -155,8 +155,10 @@ defmodule Astro.Ephemeris do
           abcorr :: String.t(),
           observer :: String.t()
         ) :: {:ok, state :: [float()], lt :: float()} | {:error, String.t()}
-  def spkezr(target, et, ref_plane, ab_corr, observer) when is_binary(target) and is_float(et) and is_binary(ref_plane) and is_binary(ab_corr) and is_binary(observer),
-    do: :erlang.nif_error({:error, :not_loaded})
+  def spkezr(target, et, ref_plane, ab_corr, observer)
+      when is_binary(target) and is_float(et) and is_binary(ref_plane) and is_binary(ab_corr) and
+             is_binary(observer),
+      do: :erlang.nif_error({:error, :not_loaded})
 
   @doc """
   Determine the apparent, true, or geometric state of a body with respect to another body relative

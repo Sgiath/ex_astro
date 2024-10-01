@@ -1,7 +1,7 @@
 defmodule Astro.MixProject do
   use Mix.Project
 
-  @version "0.2.1"
+  @version "0.2.2"
 
   def project do
     [
@@ -40,18 +40,17 @@ defmodule Astro.MixProject do
 
   defp deps do
     [
-      # HTTP client
-      {:req, "~> 0.4"},
+      # HTTP client to download kernels
+      {:req, "~> 0.5"},
 
       # C compilation
-      {:elixir_make, "~> 0.7", runtime: false},
+      {:elixir_make, "~> 0.8", runtime: false},
 
       # Development
-      {:ex_check, "~> 0.15", only: [:dev], runtime: false},
+      {:ex_check, "~> 0.16", only: [:dev], runtime: false},
       {:credo, "~> 1.7", only: [:dev], runtime: false},
-      {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
-      {:ex_doc, "~> 0.31", only: [:dev], runtime: false},
-      {:mix_test_watch, "~> 1.1", only: [:dev], runtime: false}
+      {:ex_doc, "~> 0.34", only: [:dev], runtime: false},
+      {:mix_test_watch, "~> 1.2", only: [:dev], runtime: false}
     ]
   end
 

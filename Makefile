@@ -9,7 +9,7 @@ SPICE_SRC_DIR = $(SRC_DIR)/cspice
 # compilation
 CC = gcc
 
-# Erlang headers
+# Erlang headers (env variable comes from :elixir_make dependency)
 CFLAGS += -I$(ERTS_INCLUDE_DIR)
 
 # General C flags
@@ -28,20 +28,22 @@ all: $(TARGET_DIR)/time.so $(TARGET_DIR)/ephemeris.so $(TARGET_DIR)/support.so
 # NIFs compilation
 
 $(TARGET_DIR)/%.so: $(SRC_DIR)/%.c $(SRC_DIR)/utils.h $(SPICE_SRC_DIR)/lib/cspice.a
-	mkdir -p $(@D)
+	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 $(SPICE_SRC_DIR)/lib/cspice.a:
-	rm -rf $(SPICE_SRC_DIR)
-	wget $(ARCHIVE_URL)
-	gzip -d $(ARCHIVE_NAME)
-	tar xfv cspice.tar
-	mv cspice $(SRC_DIR)
-	rm cspice.tar
+	@rm -rf $(SPICE_SRC_DIR)
+	echo "Downloading library files..."
+	@wget $(ARCHIVE_URL)
+	echo "Extracting files..."
+	@gzip -d $(ARCHIVE_NAME)
+	@tar xfv cspice.tar
+	@mv cspice $(SRC_DIR)
+	@rm cspice.tar
 
 # cleaning
 
 .PHONY: clean
 clean:
-	rm -rf $(TARGET_DIR)
-	rm -rf $(SPICE_SRC_DIR)
+	@rm -f $(TARGET_DIR)/*.so
+	@rm -rf $(SPICE_SRC_DIR)

@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.2 (2024-10-01)
+
+- updated Elixir dependencies
+- added Nix Flake setup
+
 ## v0.2.1 (2024-01-07)
 
 - fix loading strings
