@@ -7,17 +7,13 @@
   outputs =
     inputs@{ parts, ... }:
     parts.lib.mkFlake { inherit inputs; } {
-      systems = [
-        "x86_64-linux"
-        "x86_64-darwin"
-        "aarch64-darwin"
-      ];
+      systems = [ "x86_64-linux" ];
 
       perSystem =
         { pkgs, ... }:
         let
           beamPackages = pkgs.beam_minimal.packages.erlang_27;
-          elixir = beamPackages.elixir_1_17;
+          elixir = beamPackages.elixir_1_18;
         in
         {
           devShells = {
